@@ -5,9 +5,12 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =
     options.SerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
 });
 
-builder.Services.AddOutputCache(options =>
+var config = builder.Configuration.Get<ZeroAdBrowser.Api.Configuration.Config>();
+
+builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.AddBasePolicy(builder => builder.Expire(TimeSpan.FromDays(5)));
+    options.Configuration = config.RedisCache.ConnectionString;
+    options.InstanceName = config.RedisCache.InstanceName;
 });
 
 builder.Services.AddHttpClient();
@@ -15,8 +18,6 @@ builder.Services.AddHttpClient();
 builder.Services.AddSingleton<TrackersService>();
 
 var app = builder.Build();
-
-app.UseOutputCache();
 
 app.MapGet("/trackers", (TrackersService trackersService) => trackersService.GetTrackers());
 

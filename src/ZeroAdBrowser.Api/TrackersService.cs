@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using Microsoft.Extensions.Caching.Distributed;
 using System.Net.Http.Headers;
 using System.Text.Json;
 using ZeroAdBrowser.Api.Configuration;
@@ -7,29 +8,56 @@ using ZeroAdBrowser.Api.Models;
 internal sealed class TrackersService
 {   
     private readonly IHttpClientFactory httpClientFactory;
+    private readonly IDistributedCache cache;
     private readonly Config config;
     private readonly BlobServiceClient blobServiceClient;
 
-    public TrackersService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+    public TrackersService(IHttpClientFactory httpClientFactory, IConfiguration configuration, IDistributedCache cache)
     {
         this.httpClientFactory = httpClientFactory;
+        this.cache = cache;
         config = configuration.Get<Config>();
         blobServiceClient = new(config.BlobStorage.ConnectionString);
     }
 
     public async Task<List<TrackerResult>> GetTrackers()
     {
-        var currentTrackerData = await LoadFromFile();
+        var cachedResult = await LoadFromCache();
 
+        if (cachedResult is not null)
+        {
+            return cachedResult;
+        }
+
+        var currentTrackerData = await LoadFromBlob();
+
+        var newTrackerData = await LoadFromUrl(currentTrackerData.ETag);
+
+        if (newTrackerData is not null)
+        {
+            await SaveToBlob(newTrackerData);
+
+            currentTrackerData = newTrackerData;
+        }
+
+        var result = ConvertToResult(currentTrackerData.TrackerList);
+
+        await SaveToCache(result);
+
+        return result;
+    }
+
+    private async Task<TrackerData> LoadFromUrl(string currentTag)
+    {
         try
         {
             using var client = httpClientFactory.CreateClient();
 
             using var request = new HttpRequestMessage(HttpMethod.Get, config.TrackerListUrl);
 
-            if (!string.IsNullOrWhiteSpace(currentTrackerData.ETag))
+            if (!string.IsNullOrWhiteSpace(currentTag))
             {
-                request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(currentTrackerData.ETag));
+                request.Headers.IfNoneMatch.Add(new EntityTagHeaderValue(currentTag));
             }
 
             var response = await client.SendAsync(request);
@@ -38,20 +66,49 @@ internal sealed class TrackersService
 
             using var stream = await response.Content.ReadAsStreamAsync();
 
-            var parsedTrackerList = await JsonSerializer.DeserializeAsync<TrackerList>(stream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var trackerList = await JsonSerializer.DeserializeAsync<TrackerList>(stream, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            await SaveToFile(new TrackerData { ETag = response.Headers.ETag?.Tag, TrackerList = parsedTrackerList });
-
-            return ConvertToResult(parsedTrackerList);
+            return new TrackerData { ETag = response.Headers.ETag?.Tag, TrackerList = trackerList };
         }
         catch
         {
         }
 
-        return ConvertToResult(currentTrackerData.TrackerList);
-    }    
+        return null;
+    }
 
-    private async Task<TrackerData> LoadFromFile()
+    private async Task<List<TrackerResult>> LoadFromCache()
+    {
+        try
+        {
+            var cachedData = await cache.GetStringAsync(config.RedisCache.CacheKey);
+            if (cachedData is not null)
+            {
+                return JsonSerializer.Deserialize<List<TrackerResult>>(cachedData);
+            }
+        }
+        catch
+        {
+        }
+
+        return null;
+    }
+
+    private async Task SaveToCache(List<TrackerResult> trackers)
+    {
+        try
+        {
+            await cache.SetStringAsync(
+                config.RedisCache.CacheKey,
+                JsonSerializer.Serialize(trackers),
+                new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(config.CacheDurationInDays) });
+        }
+        catch
+        {
+        }
+    }
+
+    private async Task<TrackerData> LoadFromBlob()
     {
         try
         {
@@ -72,7 +129,7 @@ internal sealed class TrackersService
         return new TrackerData();
     }
 
-    private async Task SaveToFile(TrackerData trackerData)
+    private async Task SaveToBlob(TrackerData trackerData)
     {
         try
         {
