@@ -1,16 +1,26 @@
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.Extensions.Azure;
+using System.Text.Json.Serialization;
+using ZeroAdBrowser.Api.Configuration;
+
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+builder.Services.Configure<JsonOptions>(options =>
 {
-    options.SerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+    options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
 
-var config = builder.Configuration.Get<ZeroAdBrowser.Api.Configuration.Config>();
+var config = builder.Configuration.Get<Config>();
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = config.RedisCache.ConnectionString;
     options.InstanceName = config.RedisCache.InstanceName;
+});
+
+builder.Services.AddAzureClients(clientBuilder =>
+{
+    clientBuilder.AddBlobServiceClient(config.BlobStorage.ConnectionString);
 });
 
 builder.Services.AddHttpClient();

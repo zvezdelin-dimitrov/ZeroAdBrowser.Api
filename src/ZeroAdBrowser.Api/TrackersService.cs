@@ -5,20 +5,12 @@ using System.Text.Json;
 using ZeroAdBrowser.Api.Configuration;
 using ZeroAdBrowser.Api.Models;
 
-internal sealed class TrackersService
+internal sealed class TrackersService(IHttpClientFactory httpClientFactory, IDistributedCache cache, BlobServiceClient blobServiceClient, IConfiguration configuration)
 {   
-    private readonly IHttpClientFactory httpClientFactory;
-    private readonly IDistributedCache cache;
-    private readonly Config config;
-    private readonly BlobServiceClient blobServiceClient;
-
-    public TrackersService(IHttpClientFactory httpClientFactory, IConfiguration configuration, IDistributedCache cache)
-    {
-        this.httpClientFactory = httpClientFactory;
-        this.cache = cache;
-        config = configuration.Get<Config>();
-        blobServiceClient = new(config.BlobStorage.ConnectionString);
-    }
+    private readonly IHttpClientFactory httpClientFactory = httpClientFactory;
+    private readonly IDistributedCache cache = cache;    
+    private readonly BlobServiceClient blobServiceClient = blobServiceClient;
+    private readonly Config config = configuration.Get<Config>();
 
     public async Task<List<TrackerResult>> GetTrackers()
     {
