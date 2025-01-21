@@ -93,7 +93,7 @@ internal sealed class TrackersService(IHttpClientFactory httpClientFactory, IDis
             await cache.SetStringAsync(
                 config.RedisCache.CacheKey,
                 JsonSerializer.Serialize(trackers),
-                new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(config.CacheDurationInDays) });
+                new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(config.RedisCache.CacheDurationInDays) });
         }
         catch
         {

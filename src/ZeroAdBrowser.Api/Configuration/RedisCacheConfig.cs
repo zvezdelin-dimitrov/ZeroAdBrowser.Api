@@ -7,4 +7,6 @@ public class RedisCacheConfig
     public string InstanceName { get; set; }
 
     public string CacheKey { get; set; }
+
+    public int CacheDurationInDays { get; set; }
 }
