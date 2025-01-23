@@ -1,8 +1,8 @@
-﻿namespace ZeroAdBrowser.Api.Models;
+﻿namespace ZeroAdBrowser.TrackersProvider.Models;
 
 using System.Collections.Generic;
 
-public class TrackerList
+internal class TrackerList
 {
     public Dictionary<string, Tracker> Trackers { get; set; }
 

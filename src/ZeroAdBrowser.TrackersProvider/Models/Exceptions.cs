@@ -1,8 +1,8 @@
-﻿namespace ZeroAdBrowser.Api.Models;
+﻿namespace ZeroAdBrowser.TrackersProvider.Models;
 
 using System.Collections.Generic;
 
-public class Exceptions
+internal class Exceptions
 {
     public List<string> Domains { get; set; }
 

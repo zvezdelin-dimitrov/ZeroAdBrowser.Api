@@ -1,6 +1,6 @@
-﻿namespace ZeroAdBrowser.Api.Configuration;
+﻿namespace ZeroAdBrowser.TrackersProvider.Configuration;
 
-public class Config
+internal class Config
 {
     public BlobStorageConfig BlobStorage { get; set; }
 

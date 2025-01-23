@@ -1,6 +1,6 @@
-﻿namespace ZeroAdBrowser.Api.Configuration;
+﻿namespace ZeroAdBrowser.TrackersProvider.Configuration;
 
-public class RedisCacheConfig
+internal class RedisCacheConfig
 {
     public string ConnectionString { get; set; }
 

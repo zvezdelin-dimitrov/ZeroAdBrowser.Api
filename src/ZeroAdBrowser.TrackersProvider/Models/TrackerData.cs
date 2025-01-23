@@ -1,6 +1,6 @@
-﻿namespace ZeroAdBrowser.Api.Models;
+﻿namespace ZeroAdBrowser.TrackersProvider.Models;
 
-public class TrackerData
+internal class TrackerData
 {
     public string ETag { get; set; }
 

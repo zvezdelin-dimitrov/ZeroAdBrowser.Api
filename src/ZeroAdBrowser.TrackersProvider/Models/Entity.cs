@@ -1,9 +1,9 @@
-﻿namespace ZeroAdBrowser.Api.Models;
+﻿namespace ZeroAdBrowser.TrackersProvider.Models;
 
 using System.Collections.Generic;
 
-public class Entity
-{    
+internal class Entity
+{
     public List<string> Domains { get; set; }
 
     public double Prevalence { get; set; }

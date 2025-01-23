@@ -1,34 +1,18 @@
-using Microsoft.AspNetCore.Http.Json;
-using Microsoft.Extensions.Azure;
-using System.Text.Json.Serialization;
-using ZeroAdBrowser.Api.Configuration;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.Configure<JsonOptions>(options =>
-{
-    options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-});
-
-var config = builder.Configuration.Get<Config>();
-
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = config.RedisCache.ConnectionString;
-    options.InstanceName = config.RedisCache.InstanceName;
-});
-
-builder.Services.AddAzureClients(clientBuilder =>
-{
-    clientBuilder.AddBlobServiceClient(config.BlobStorage.ConnectionString);
-});
-
-builder.Services.AddHttpClient();
-
-builder.Services.AddSingleton<TrackersService>();
+builder.Services.AddTrackersProvider(builder.Configuration);
 
 var app = builder.Build();
 
-app.MapGet("/trackers", (TrackersService trackersService) => trackersService.GetTrackers());
+app.MapGet("/trackers", async (ITrackersProvider trackersProvider, IOptions<JsonSerializerOptions> jsonSerializerOptions) =>
+{
+    var trackers = await trackersProvider.GetTrackers();
+    return Results.Json(trackers, jsonSerializerOptions.Value);
+});
 
 app.Run();

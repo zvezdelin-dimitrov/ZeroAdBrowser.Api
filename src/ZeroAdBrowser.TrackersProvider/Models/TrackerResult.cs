@@ -1,4 +1,4 @@
-﻿namespace ZeroAdBrowser.Api.Models;
+﻿namespace ZeroAdBrowser.TrackersProvider.Models;
 
 using System.Collections.Generic;
 

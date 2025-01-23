@@ -1,12 +1,9 @@
 ﻿{
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
-    "https": {
+    "ZeroAdBrowser.Api": {
       "commandName": "Project",
-      "applicationUrl": "https://localhost:7166",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
+      "applicationUrl": "http://localhost:7166"
     }
   }
 }

@@ -1,14 +1,14 @@
 ﻿{
   "BlobStorage": {
-    "ConnectionString": "BlobStorageConnectionString",
+    "ConnectionString": "",
     "ContainerName": "default",
     "BlobName": "trackers.json"
   },
   "RedisCache": {
-    "ConnectionString": "RedisCacheConnectionString",
+    "ConnectionString": "",
     "InstanceName": "TrackersCache_",
     "CacheKey": "trackers",
     "CacheDurationInDays": 5
   },
-  "TrackerListUrl": "TrackerListUrl"
+  "TrackerListUrl": ""
 }

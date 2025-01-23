@@ -1,6 +1,6 @@
-﻿namespace ZeroAdBrowser.Api.Models;
+﻿namespace ZeroAdBrowser.TrackersProvider.Models;
 
-public class Owner
+internal class Owner
 {
     public string Name { get; set; }
 
