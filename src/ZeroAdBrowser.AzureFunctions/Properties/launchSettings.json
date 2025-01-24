@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "ZeroAdBrowser.AzureFunctions": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7166",
+      "environmentVariables": {
+        "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated"
+      }
+    }
+  }
+}
