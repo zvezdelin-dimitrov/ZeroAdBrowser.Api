@@ -10,7 +10,10 @@ public static class TrackersProviderModule
 {
     public static IServiceCollection AddTrackersProvider(this IServiceCollection services, IConfigurationManager configurationManager)
     {
-        configurationManager.SetBasePath(AppContext.BaseDirectory).AddJsonFile("trackersprovider.appsettings.json").AddUserSecrets<Config>();
+        configurationManager.SetBasePath(AppContext.BaseDirectory)
+                            .AddJsonFile("trackersprovider.appsettings.json")
+                            .AddEnvironmentVariables()
+                            .AddUserSecrets<Config>();
 
         var config = configurationManager.Get<Config>();
 
