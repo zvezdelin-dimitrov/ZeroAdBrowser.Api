@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,8 +14,8 @@ using System.Threading.Tasks;
 using ZeroAdBrowser.TrackersProvider.Configuration;
 using ZeroAdBrowser.TrackersProvider.Models;
 
-internal class TrackersProvider(IHttpClientFactory httpClientFactory, IDistributedCache cache, BlobServiceClient blobServiceClient, IOptions<JsonSerializerOptions> jsonSerializerOptions, IConfiguration configuration) : ITrackersProvider
-{   
+internal class TrackersProvider(IHttpClientFactory httpClientFactory, IDistributedCache cache, BlobServiceClient blobServiceClient, IOptions<JsonSerializerOptions> jsonSerializerOptions, IConfiguration configuration, ILogger<TrackersProvider> logger) : ITrackersProvider
+{
     private readonly JsonSerializerOptions jsonSerializerOptions = jsonSerializerOptions.Value;
     private readonly Config config = configuration.Get<Config>();
 
@@ -68,8 +69,9 @@ internal class TrackersProvider(IHttpClientFactory httpClientFactory, IDistribut
 
             return new TrackerData { ETag = response.Headers.ETag?.Tag, TrackerList = trackerList };
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogError(ex, "Error loading tracker data from URL");
         }
 
         return null;
@@ -85,8 +87,9 @@ internal class TrackersProvider(IHttpClientFactory httpClientFactory, IDistribut
                 return JsonSerializer.Deserialize<List<TrackerResult>>(cachedData, jsonSerializerOptions);
             }
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogError(ex, "Error loading tracker data from cache");
         }
 
         return null;
@@ -101,8 +104,9 @@ internal class TrackersProvider(IHttpClientFactory httpClientFactory, IDistribut
                 JsonSerializer.Serialize(trackers, jsonSerializerOptions),
                 new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromDays(config.RedisCache.CacheDurationInDays) });
         }
-        catch
+        catch (Exception ex)
         {
+            logger.LogError(ex, "Error saving tracker data to cache");
         }
     }
 
@@ -120,9 +124,10 @@ internal class TrackersProvider(IHttpClientFactory httpClientFactory, IDistribut
                 return await JsonSerializer.DeserializeAsync<TrackerData>(stream, jsonSerializerOptions);
             }
         }
-        catch
+        catch (Exception ex)
         {
-        }        
+            logger.LogError(ex, "Error loading tracker data from blob");
+        }
 
         return new TrackerData();
     }
@@ -142,9 +147,10 @@ internal class TrackersProvider(IHttpClientFactory httpClientFactory, IDistribut
             var blobClient = containerClient.GetBlobClient(config.BlobStorage.BlobName);
             await blobClient.UploadAsync(stream, true);
         }
-        catch
+        catch (Exception ex)
         {
-        }        
+            logger.LogError(ex, "Error saving tracker data to blob");
+        }
     }
 
     private static List<TrackerResult> ConvertToResult(TrackerList trackerList)

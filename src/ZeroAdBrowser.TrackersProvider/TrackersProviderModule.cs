@@ -36,7 +36,7 @@ public static class TrackersProviderModule
         });
 
         services.AddHttpClient();
-
+        services.AddLogging();
         services.AddSingleton<ITrackersProvider, TrackersProvider>();
 
         return services;
