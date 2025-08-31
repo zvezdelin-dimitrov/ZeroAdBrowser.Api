@@ -15,9 +15,6 @@ using ZeroAdBrowser.TrackersProvider.Models;
 
 internal class TrackersProvider(IHttpClientFactory httpClientFactory, IDistributedCache cache, BlobServiceClient blobServiceClient, IOptions<JsonSerializerOptions> jsonSerializerOptions, IConfiguration configuration) : ITrackersProvider
 {   
-    private readonly IHttpClientFactory httpClientFactory = httpClientFactory;
-    private readonly IDistributedCache cache = cache;    
-    private readonly BlobServiceClient blobServiceClient = blobServiceClient;
     private readonly JsonSerializerOptions jsonSerializerOptions = jsonSerializerOptions.Value;
     private readonly Config config = configuration.Get<Config>();
 

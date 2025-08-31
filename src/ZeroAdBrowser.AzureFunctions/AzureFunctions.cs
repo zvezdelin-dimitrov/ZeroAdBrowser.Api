@@ -7,9 +7,6 @@ using System.Threading.Tasks;
 
 internal class AzureFunctions(ITrackersProvider trackersProvider, IOptions<JsonSerializerOptions> jsonSerializerOptions)
 {
-    private readonly ITrackersProvider trackersProvider = trackersProvider;
-    private readonly JsonSerializerOptions jsonSerializerOptions = jsonSerializerOptions.Value;
-
     [Function(nameof(Trackers))]
     public async Task<IActionResult> Trackers([HttpTrigger(AuthorizationLevel.Anonymous, nameof(HttpMethods.Get))] HttpRequest request)
     {
